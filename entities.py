@@ -1,22 +1,24 @@
 from __future__ import annotations
 
-from homeassistant.core import HomeAssistant
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.entity import Entity, DeviceInfo
-from homeassistant.const import STATE_UNKNOWN
 from homeassistant.components.sensor import SensorEntity
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import STATE_UNKNOWN
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import DeviceInfo, Entity
 
 from .const import (
-    DOMAIN,
-    CONF_PERSON,
-    CONF_DEVICE_TRACKER,
-    CONF_WIFI_SENSOR,
-    CONF_PLACES_ENTITY,
     CONF_CATEGORY,
+    CONF_DEVICE_TRACKER,
+    CONF_PERSON,
+    CONF_PLACES_ENTITY,
+    CONF_WIFI_SENSOR,
+    DOMAIN,
 )
 
 
-async def create_enhanced_people_sensors(hass: HomeAssistant, entry: ConfigEntry) -> list[Entity]:
+async def create_enhanced_people_sensors(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> list[Entity]:
     """Create all sensors for a person."""
     sensors: list[Entity] = []
 
@@ -47,7 +49,14 @@ class BaseEnhancedSensor(SensorEntity):
 
     should_poll = False
 
-    def __init__(self, person_name: str, unique_id: str, entry_id: str, sensor_name: str, source_entity: str | None = None):
+    def __init__(
+        self,
+        person_name: str,
+        unique_id: str,
+        entry_id: str,
+        sensor_name: str,
+        source_entity: str | None = None,
+    ):
         self._attr_name = f"{person_name} {sensor_name}"
         self._attr_unique_id = unique_id
         self._entry_id = entry_id
@@ -72,7 +81,13 @@ class BaseEnhancedSensor(SensorEntity):
 
 class PresenceSensor(BaseEnhancedSensor):
     def __init__(self, person_entity: str, person_name: str, entry_id: str):
-        super().__init__(person_name, f"{person_entity}_presence", entry_id, "Presence", person_entity)
+        super().__init__(
+            person_name,
+            f"{person_entity}_presence",
+            entry_id,
+            "Presence",
+            person_entity,
+        )
         self._entity_id = person_entity
 
     @property
@@ -83,7 +98,13 @@ class PresenceSensor(BaseEnhancedSensor):
 
 class TrackerSensor(BaseEnhancedSensor):
     def __init__(self, tracker_entity: str, person_name: str, entry_id: str):
-        super().__init__(person_name, f"{tracker_entity}_gps", entry_id, "GPS Location", tracker_entity)
+        super().__init__(
+            person_name,
+            f"{tracker_entity}_gps",
+            entry_id,
+            "GPS Location",
+            tracker_entity,
+        )
         self._entity_id = tracker_entity
 
     @property
@@ -94,7 +115,9 @@ class TrackerSensor(BaseEnhancedSensor):
 
 class WifiSensor(BaseEnhancedSensor):
     def __init__(self, wifi_entity: str, person_name: str, entry_id: str):
-        super().__init__(person_name, f"{wifi_entity}_wifi", entry_id, "WiFi SSID", wifi_entity)
+        super().__init__(
+            person_name, f"{wifi_entity}_wifi", entry_id, "WiFi SSID", wifi_entity
+        )
         self._entity_id = wifi_entity
 
     @property
@@ -105,7 +128,9 @@ class WifiSensor(BaseEnhancedSensor):
 
 class PlacesSensor(BaseEnhancedSensor):
     def __init__(self, places_entity: str, person_name: str, entry_id: str):
-        super().__init__(person_name, f"{places_entity}_places", entry_id, "Places", places_entity)
+        super().__init__(
+            person_name, f"{places_entity}_places", entry_id, "Places", places_entity
+        )
         self._entity_id = places_entity
 
     @property
@@ -116,7 +141,9 @@ class PlacesSensor(BaseEnhancedSensor):
 
 class PersonTypeSensor(BaseEnhancedSensor):
     def __init__(self, person_name: str, category: str, entry_id: str):
-        super().__init__(person_name, f"{person_name}_person_type", entry_id, "Person Type")
+        super().__init__(
+            person_name, f"{person_name}_person_type", entry_id, "Person Type"
+        )
         self._category = category
 
     @property

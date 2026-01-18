@@ -1,13 +1,14 @@
 {
-    "domain": "enhanced_people",
-    "name": "Enhanced People",
-    "codeowners": ["@mtwalkup"],
-    "config_flow": true,
-    "dependencies": [],
-    "documentation": "https://github.com/mtwalkup/enhanced_people",
-    "iot_class": "local_polling",
-    "issue_tracker": "https://github.com/mtwalkup/enhanced_people/issues",
-    "requirements": [],
-    "version": "1.0.2"
-  }
-  
+  "codeowners": [
+    "@mtwalkup"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/mtwalkup/enhanced_people",
+  "domain": "enhanced_people",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/mtwalkup/enhanced_people/issues",
+  "name": "Enhanced People",
+  "requirements": [],
+  "version": "1.0.2"
+}

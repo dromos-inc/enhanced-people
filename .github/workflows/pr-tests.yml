@@ -1,0 +1,185 @@
+name: PR Tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'LICENSE'
+      - '.gitignore'
+
+jobs:
+  # General file checks (trailing whitespace, EOF, YAML/JSON validation)
+  file-checks:
+    name: File Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for trailing whitespace
+        run: |
+          if git grep -I -n '[[:space:]]$' -- ':!*.md' ':!*.patch' 2>/dev/null; then
+            echo "::error::Trailing whitespace found in files above"
+            exit 1
+          fi
+          echo "No trailing whitespace found"
+
+      - name: Check files end with newline
+        run: |
+          files_missing_newline=""
+          for file in $(git ls-files -- ':!*.png' ':!*.jpg' ':!*.gif' ':!*.ico' ':!*.pdf' ':!*.woff' ':!*.woff2' ':!*.ttf' ':!*.eot'); do
+            if [ -f "$file" ] && [ -s "$file" ]; then
+              if [ "$(tail -c1 "$file" | wc -l)" -eq 0 ]; then
+                files_missing_newline="$files_missing_newline$file\n"
+              fi
+            fi
+          done
+          if [ -n "$files_missing_newline" ]; then
+            echo "::error::Files missing final newline:"
+            echo -e "$files_missing_newline"
+            exit 1
+          fi
+          echo "All files end with newline"
+
+      - name: Validate YAML files
+        run: |
+          pip install pyyaml
+          find . -name '*.yml' -o -name '*.yaml' | while read -r file; do
+            python -c "import yaml; yaml.safe_load(open('$file'))" || exit 1
+          done
+          echo "All YAML files are valid"
+
+      - name: Validate JSON files
+        run: |
+          find . -name '*.json' | while read -r file; do
+            python -c "import json; json.load(open('$file'))" || exit 1
+          done
+          echo "All JSON files are valid"
+
+  # Markdown linting
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install markdownlint-cli
+        run: npm install -g markdownlint-cli
+
+      - name: Run markdownlint
+        run: markdownlint --config .markdownlint.json '**/*.md'
+
+  # Shell script linting
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          additional_files: '*.sh'
+          scandir: './scripts'
+          severity: warning
+          check_together: 'yes'
+        env:
+          SHELLCHECK_OPTS: -x -e SC1091
+
+  # Dockerfile linting
+  hadolint:
+    name: Hadolint (Dockerfile Lint)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: "docker/images/*/Dockerfile"
+          recursive: true
+          ignore: DL3006,DL3008,DL3009,DL3013,DL3015,DL3018,DL3059,DL4006,SC2028
+          # DL3006: Always tag the version of an image explicitly (base image tags managed separately)
+          # DL3008: Pin apt versions (impractical for base images)
+          # DL3009: Delete apt-get lists (handled in final cleanup RUN)
+          # DL3013: Pin pip versions (impractical)
+          # DL3015: Avoid additional packages by specifying --no-install-recommends (intentional for dev images)
+          # DL3018: Pin apk versions (impractical)
+          # DL3059: Multiple consecutive RUN instructions (intentional for Ansible playbook separation)
+          # DL4006: Set SHELL option -o pipefail (not needed for our use case)
+          # SC2028: echo may not expand escape sequences (intentional use of printf pattern)
+
+  # Python tests
+  python-tests:
+    name: Python Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: scripts
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest tests/ -v
+
+  # Shell script tests (BATS)
+  shell-tests:
+    name: Shell Script Tests (BATS)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install BATS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
+
+      - name: Run BATS tests
+        run: bats scripts/tests/bats/
+
+  # Go workflow tests
+  go-workflow-tests:
+    name: Go Workflow Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tests/workflows
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: false
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run Go tests
+        run: go test -v -short ./...
