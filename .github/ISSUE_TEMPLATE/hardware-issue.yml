@@ -2,25 +2,6 @@ name: Hardware Issue
 description: Report a problem with physical hardware or devices
 labels: ["Type: Hardware", "-Needs: Triage"]
 body:
-  - type: input
-    id: contact-phone
-    attributes:
-      label: Contact Phone
-      description: Optional phone number for follow-up
-      placeholder: "555-555-5555"
-    validations:
-      required: false
-
-  - type: dropdown
-    id: contact-method
-    attributes:
-      label: Preferred Contact Method
-      options:
-        - E-mail
-        - Phone
-    validations:
-      required: true
-
   - type: dropdown
     id: severity
     attributes:

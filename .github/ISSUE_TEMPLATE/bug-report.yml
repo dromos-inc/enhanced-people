@@ -2,25 +2,6 @@ name: Bug Report
 description: Report a software or web bug
 labels: ["Type: Bug", "-Needs: Triage"]
 body:
-  - type: input
-    id: contact-phone
-    attributes:
-      label: Contact Phone
-      description: Optional phone number for follow-up
-      placeholder: "555-555-5555"
-    validations:
-      required: false
-
-  - type: dropdown
-    id: contact-method
-    attributes:
-      label: Preferred Contact Method
-      options:
-        - E-mail
-        - Phone
-    validations:
-      required: true
-
   - type: dropdown
     id: severity
     attributes:
@@ -35,11 +16,12 @@ body:
       required: true
 
   - type: input
-    id: system
+    id: application
     attributes:
-      label: System/Application
-      description: What system or application is affected?
+      label: Application
+      description: What application is affected? (pre-filled with this repo, edit if different)
       placeholder: "e.g., Web portal, Mobile app, API"
+      value: "enhanced-people"
     validations:
       required: true
 

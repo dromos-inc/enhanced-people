@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
 
-from .const import DOMAIN, CONF_PERSON, CONF_DEVICE_TRACKER
+from .const import CONF_DEVICE_TRACKER, CONF_PERSON, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if CONF_DEVICE_TRACKER not in entry.data:
             _LOGGER.error(f"Missing required configuration: {CONF_DEVICE_TRACKER}")
             return False
-            
+
         hass.data.setdefault(DOMAIN, {})
         hass.data[DOMAIN][entry.entry_id] = entry.data
 

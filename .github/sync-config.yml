@@ -20,4 +20,3 @@ test_infrastructure:
 
 copilot_review:
   enabled: true
-
